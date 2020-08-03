@@ -1,0 +1,16 @@
+{
+  "port": 3001,
+  "host": "127.0.0.1",
+  "https": {
+    "keyDir": "./certs/server.key",
+    "certDir": "./certs/server.crt"
+  },
+  "kurento": {
+    "url": "ws://localhost:8888/kurento",
+    "option": {}
+  },
+  "redis": {
+    "host": "127.0.0.1",
+    "port": 6379
+  }
+}
