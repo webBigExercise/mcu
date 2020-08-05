@@ -74,17 +74,23 @@ socket.on('client-have-incoming-call', async ({ data }) => {
       if (err) return console.error(err)
       this.generateOffer((err, sdp) => {
         if (err) return console.error(err)
-
         socket.emit('client-accept-call', {
           data: {
-            sdp,
-            callerId: data.callerId,
-            calleeId: data.calleeId,
+            callerUserId: data.from,
+            acceptUserId: userId,
+            acceptUserSdp: sdp,
+            to: data.to, // room or private user
+            callerOfferSdp: data.callerOfferSdp,
+            callType: data.callType,
           },
         })
       })
     }
   )
+})
+
+socket.on('client-accept-call', ({ data }) => {
+  socket.emit('server-start-call-session', { data })
 })
 
 socket.on('server-send-kurento-candidate', ({ data }) => {

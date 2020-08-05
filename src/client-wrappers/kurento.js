@@ -4,7 +4,6 @@ let _client = null
 
 module.exports.connect = async function connect(url, options) {
   const client = await kurento(url, options)
-
   console.log(
     `Kurento client is listen on ${url} with option: ${JSON.stringify(options)}`
   )

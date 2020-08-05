@@ -5,6 +5,7 @@ const enableEventClientAcceptCall = require('./client-accept-call')
 const enableEventClientSendIceCandidate = require('./client-send-ice-candidate')
 const enableEventStopCall = require('./stop-call')
 const enableEventJoinRoom = require('./join-room')
+const enableEventServerStartCallSession = require('./server-start-call-session')
 
 const io = socketIoWrapper.getClient()
 
@@ -19,4 +20,5 @@ io.on('connection', (socket) => {
   enableEventClientSendIceCandidate(socket)
   enableEventStopCall(socket)
   enableEventJoinRoom(socket)
+  enableEventServerStartCallSession(socket)
 })

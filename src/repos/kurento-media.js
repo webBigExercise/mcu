@@ -9,3 +9,9 @@ module.exports.getMediaById = async function getMediaById(id) {
     return null
   }
 }
+
+module.exports.create = async function create(type, option) {
+  const client = kurentoWrapper.getClient()
+  const mediaObject = await client.create(type, option)
+  return mediaObject
+}
