@@ -16,14 +16,22 @@
   </div>
 
   <div>
+    <label for="call-type">Call Type:</label>
+    <select id="call-type">
+      <option value="private">Private</option>
+      <option value="group">Group</option>
+    </select>
+  </div>
+  <div>
     <button id="call-btn" >Call</button>
   </div>
   <div>
     <button id="stop-btn" >Stop</button>
   </div>
+  
 
   <div>My Screen</div>
-  <video id="videoInput" autoplay width="480px" height="360px"></video>
+  <video style="display:none" id="videoInput" autoplay width="480px" height="360px"></video>
   <div>Remote Screen</div>
   <video id="videoOutput" autoplay width="480px" height="360px"></video>
   <script src="./client.build.js"></script>

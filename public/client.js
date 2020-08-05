@@ -6,23 +6,25 @@ require('webrtc-adapter')
 const wsUrl = location.host
 const socket = io(wsUrl)
 let webRtcPeer
+let userId //TODO: in the future should use username or real user-id instead of socket.id
 
 socket.on('connect', () => {
   console.log('connected')
-  document.querySelector('#username').innerText = `Your id is ${socket.id}`
-
+  userId = socket.id
+  document.querySelector('#username').innerText = `Your id is ${userId}`
 })
 
 document.querySelector('#stop-btn').onclick = function () {
   socket.emit('stop-call', {
     data: {
-      callerId: socket.id,
-      calleeId: document.querySelector('#to').value
-    }
+      callerId: userId,
+      calleeId: document.querySelector('#to').value,
+    },
   })
 }
 
 document.querySelector('#call-btn').onclick = function makeCall() {
+  const callType = document.querySelector('#call-type').value
   const webRtcPeerOptions = {
     localVideo: document.querySelector('#videoInput'),
     remoteVideo: document.querySelector('#videoOutput'),
@@ -30,7 +32,7 @@ document.querySelector('#call-btn').onclick = function makeCall() {
     //browser collect ice candidate (network connection)
     onicecandidate: (candidate) =>
       socket.emit('client-send-ice-candidate', {
-        data: { candidate },
+        data: { candidate, userId },
       }),
   }
 
@@ -43,9 +45,10 @@ document.querySelector('#call-btn').onclick = function makeCall() {
 
         socket.emit('client-make-call', {
           data: {
-            sdp,
-            callerId: socket.id,
-            calleeId: document.querySelector('#to').value,
+            callerOfferSdp: sdp,
+            callType,
+            to: document.querySelector('#to').value,
+            from: userId,
           },
         })
       })
@@ -53,7 +56,7 @@ document.querySelector('#call-btn').onclick = function makeCall() {
   )
 }
 
-socket.on('client-have-incoming-call', async ({data}) => {
+socket.on('client-have-incoming-call', async ({ data }) => {
   const webRtcPeerOptions = {
     localVideo: document.querySelector('#videoInput'),
     remoteVideo: document.querySelector('#videoOutput'),
@@ -84,12 +87,10 @@ socket.on('client-have-incoming-call', async ({data}) => {
   )
 })
 
-
-
-socket.on('server-send-kurento-candidate', ({data}) => {
+socket.on('server-send-kurento-candidate', ({ data }) => {
   webRtcPeer.addIceCandidate(data.candidate)
 })
 
-socket.on('start-communication', ({data}) => {
+socket.on('start-communication', ({ data }) => {
   webRtcPeer.processAnswer(data.sdp)
 })

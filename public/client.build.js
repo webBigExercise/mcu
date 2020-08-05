@@ -81,116 +81,10 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./client.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./public/client.js");
 /******/ })
 /************************************************************************/
 /******/ ({
-
-/***/ "./client.js":
-/*!*******************!*\
-  !*** ./client.js ***!
-  \*******************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-const io = __webpack_require__(/*! socket.io-client */ "./node_modules/socket.io-client/lib/index.js")
-const kurentoUtils = __webpack_require__(/*! kurento-utils */ "./node_modules/kurento-utils/lib/index.js")
-__webpack_require__(/*! webrtc-adapter */ "./node_modules/webrtc-adapter/src/js/adapter_core.js")
-
-//const wsUrl = `https://localhost:3000`
-const wsUrl = location.host
-const socket = io(wsUrl)
-let webRtcPeer
-
-socket.on('connect', () => {
-  console.log('connected')
-  document.querySelector('#username').innerText = `Your id is ${socket.id}`
-
-})
-
-document.querySelector('#stop-btn').onclick = function () {
-  socket.emit('stop-call', {
-    data: {
-      callerId: socket.id,
-      calleeId: document.querySelector('#to').value
-    }
-  })
-}
-
-document.querySelector('#call-btn').onclick = function makeCall() {
-  const webRtcPeerOptions = {
-    localVideo: document.querySelector('#videoInput'),
-    remoteVideo: document.querySelector('#videoOutput'),
-
-    //browser collect ice candidate (network connection)
-    onicecandidate: (candidate) =>
-      socket.emit('client-send-ice-candidate', {
-        data: { candidate },
-      }),
-  }
-
-  webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(
-    webRtcPeerOptions,
-    function (err) {
-      if (err) return console.error(err)
-      this.generateOffer((err, sdp) => {
-        if (err) return console.error(err)
-
-        socket.emit('client-make-call', {
-          data: {
-            sdp,
-            callerId: socket.id,
-            calleeId: document.querySelector('#to').value,
-          },
-        })
-      })
-    }
-  )
-}
-
-socket.on('client-have-incoming-call', async ({data}) => {
-  const webRtcPeerOptions = {
-    localVideo: document.querySelector('#videoInput'),
-    remoteVideo: document.querySelector('#videoOutput'),
-
-    //browser collect ice candidate (network connection)
-    onicecandidate: (candidate) =>
-      socket.emit('client-send-ice-candidate', {
-        data: { candidate },
-      }),
-  }
-
-  webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(
-    webRtcPeerOptions,
-    function (err) {
-      if (err) return console.error(err)
-      this.generateOffer((err, sdp) => {
-        if (err) return console.error(err)
-
-        socket.emit('client-accept-call', {
-          data: {
-            sdp,
-            callerId: data.callerId,
-            calleeId: data.calleeId,
-          },
-        })
-      })
-    }
-  )
-})
-
-
-
-socket.on('server-send-kurento-candidate', ({data}) => {
-  webRtcPeer.addIceCandidate(data.candidate)
-})
-
-socket.on('start-communication', ({data}) => {
-  webRtcPeer.processAnswer(data.sdp)
-})
-
-
-/***/ }),
 
 /***/ "./node_modules/after/index.js":
 /*!*************************************!*\
@@ -9094,169 +8988,6 @@ exports.WebRtcPeer = WebRtcPeer;
 
 /***/ }),
 
-/***/ "./node_modules/ms/index.js":
-/*!**********************************!*\
-  !*** ./node_modules/ms/index.js ***!
-  \**********************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-/**
- * Helpers.
- */
-
-var s = 1000;
-var m = s * 60;
-var h = m * 60;
-var d = h * 24;
-var y = d * 365.25;
-
-/**
- * Parse or format the given `val`.
- *
- * Options:
- *
- *  - `long` verbose formatting [false]
- *
- * @param {String|Number} val
- * @param {Object} [options]
- * @throws {Error} throw an error if val is not a non-empty string or a number
- * @return {String|Number}
- * @api public
- */
-
-module.exports = function(val, options) {
-  options = options || {};
-  var type = typeof val;
-  if (type === 'string' && val.length > 0) {
-    return parse(val);
-  } else if (type === 'number' && isNaN(val) === false) {
-    return options.long ? fmtLong(val) : fmtShort(val);
-  }
-  throw new Error(
-    'val is not a non-empty string or a valid number. val=' +
-      JSON.stringify(val)
-  );
-};
-
-/**
- * Parse the given `str` and return milliseconds.
- *
- * @param {String} str
- * @return {Number}
- * @api private
- */
-
-function parse(str) {
-  str = String(str);
-  if (str.length > 100) {
-    return;
-  }
-  var match = /^((?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|years?|yrs?|y)?$/i.exec(
-    str
-  );
-  if (!match) {
-    return;
-  }
-  var n = parseFloat(match[1]);
-  var type = (match[2] || 'ms').toLowerCase();
-  switch (type) {
-    case 'years':
-    case 'year':
-    case 'yrs':
-    case 'yr':
-    case 'y':
-      return n * y;
-    case 'days':
-    case 'day':
-    case 'd':
-      return n * d;
-    case 'hours':
-    case 'hour':
-    case 'hrs':
-    case 'hr':
-    case 'h':
-      return n * h;
-    case 'minutes':
-    case 'minute':
-    case 'mins':
-    case 'min':
-    case 'm':
-      return n * m;
-    case 'seconds':
-    case 'second':
-    case 'secs':
-    case 'sec':
-    case 's':
-      return n * s;
-    case 'milliseconds':
-    case 'millisecond':
-    case 'msecs':
-    case 'msec':
-    case 'ms':
-      return n;
-    default:
-      return undefined;
-  }
-}
-
-/**
- * Short format for `ms`.
- *
- * @param {Number} ms
- * @return {String}
- * @api private
- */
-
-function fmtShort(ms) {
-  if (ms >= d) {
-    return Math.round(ms / d) + 'd';
-  }
-  if (ms >= h) {
-    return Math.round(ms / h) + 'h';
-  }
-  if (ms >= m) {
-    return Math.round(ms / m) + 'm';
-  }
-  if (ms >= s) {
-    return Math.round(ms / s) + 's';
-  }
-  return ms + 'ms';
-}
-
-/**
- * Long format for `ms`.
- *
- * @param {Number} ms
- * @return {String}
- * @api private
- */
-
-function fmtLong(ms) {
-  return plural(ms, d, 'day') ||
-    plural(ms, h, 'hour') ||
-    plural(ms, m, 'minute') ||
-    plural(ms, s, 'second') ||
-    ms + ' ms';
-}
-
-/**
- * Pluralization helper.
- */
-
-function plural(ms, n, name) {
-  if (ms < n) {
-    return;
-  }
-  if (ms < n * 1.5) {
-    return Math.floor(ms / n) + ' ' + name;
-  }
-  return Math.ceil(ms / n) + ' ' + name + 's';
-}
-
-
-/***/ }),
-
 /***/ "./node_modules/normalice/index.js":
 /*!*****************************************!*\
   !*** ./node_modules/normalice/index.js ***!
@@ -13951,7 +13682,7 @@ if (true) {
  */
 
 var url = __webpack_require__(/*! ./url */ "./node_modules/socket.io-client/lib/url.js");
-var parser = __webpack_require__(/*! socket.io-parser */ "./node_modules/socket.io-parser/index.js");
+var parser = __webpack_require__(/*! socket.io-parser */ "./node_modules/socket.io-client/node_modules/socket.io-parser/index.js");
 var Manager = __webpack_require__(/*! ./manager */ "./node_modules/socket.io-client/lib/manager.js");
 var debug = __webpack_require__(/*! debug */ "./node_modules/socket.io-client/node_modules/debug/src/browser.js")('socket.io-client');
 
@@ -14058,7 +13789,7 @@ exports.Socket = __webpack_require__(/*! ./socket */ "./node_modules/socket.io-c
 var eio = __webpack_require__(/*! engine.io-client */ "./node_modules/engine.io-client/lib/index.js");
 var Socket = __webpack_require__(/*! ./socket */ "./node_modules/socket.io-client/lib/socket.js");
 var Emitter = __webpack_require__(/*! component-emitter */ "./node_modules/component-emitter/index.js");
-var parser = __webpack_require__(/*! socket.io-parser */ "./node_modules/socket.io-parser/index.js");
+var parser = __webpack_require__(/*! socket.io-parser */ "./node_modules/socket.io-client/node_modules/socket.io-parser/index.js");
 var on = __webpack_require__(/*! ./on */ "./node_modules/socket.io-client/lib/on.js");
 var bind = __webpack_require__(/*! component-bind */ "./node_modules/component-bind/index.js");
 var debug = __webpack_require__(/*! debug */ "./node_modules/socket.io-client/node_modules/debug/src/browser.js")('socket.io-client:manager');
@@ -14674,7 +14405,7 @@ function on (obj, ev, fn) {
  * Module dependencies.
  */
 
-var parser = __webpack_require__(/*! socket.io-parser */ "./node_modules/socket.io-parser/index.js");
+var parser = __webpack_require__(/*! socket.io-parser */ "./node_modules/socket.io-client/node_modules/socket.io-parser/index.js");
 var Emitter = __webpack_require__(/*! component-emitter */ "./node_modules/component-emitter/index.js");
 var toArray = __webpack_require__(/*! to-array */ "./node_modules/to-array/index.js");
 var on = __webpack_require__(/*! ./on */ "./node_modules/socket.io-client/lib/on.js");
@@ -15750,6 +15481,22 @@ module.exports = setup;
 
 /***/ }),
 
+/***/ "./node_modules/socket.io-client/node_modules/isarray/index.js":
+/*!*********************************************************************!*\
+  !*** ./node_modules/socket.io-client/node_modules/isarray/index.js ***!
+  \*********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var toString = {}.toString;
+
+module.exports = Array.isArray || function (arr) {
+  return toString.call(arr) == '[object Array]';
+};
+
+
+/***/ }),
+
 /***/ "./node_modules/socket.io-client/node_modules/ms/index.js":
 /*!****************************************************************!*\
   !*** ./node_modules/socket.io-client/node_modules/ms/index.js ***!
@@ -15923,10 +15670,10 @@ function plural(ms, msAbs, n, name) {
 
 /***/ }),
 
-/***/ "./node_modules/socket.io-parser/binary.js":
-/*!*************************************************!*\
-  !*** ./node_modules/socket.io-parser/binary.js ***!
-  \*************************************************/
+/***/ "./node_modules/socket.io-client/node_modules/socket.io-parser/binary.js":
+/*!*******************************************************************************!*\
+  !*** ./node_modules/socket.io-client/node_modules/socket.io-parser/binary.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15936,8 +15683,8 @@ function plural(ms, msAbs, n, name) {
  * Module requirements
  */
 
-var isArray = __webpack_require__(/*! isarray */ "./node_modules/socket.io-parser/node_modules/isarray/index.js");
-var isBuf = __webpack_require__(/*! ./is-buffer */ "./node_modules/socket.io-parser/is-buffer.js");
+var isArray = __webpack_require__(/*! isarray */ "./node_modules/socket.io-client/node_modules/isarray/index.js");
+var isBuf = __webpack_require__(/*! ./is-buffer */ "./node_modules/socket.io-client/node_modules/socket.io-parser/is-buffer.js");
 var toString = Object.prototype.toString;
 var withNativeBlob = typeof Blob === 'function' || (typeof Blob !== 'undefined' && toString.call(Blob) === '[object BlobConstructor]');
 var withNativeFile = typeof File === 'function' || (typeof File !== 'undefined' && toString.call(File) === '[object FileConstructor]');
@@ -16075,10 +15822,10 @@ exports.removeBlobs = function(data, callback) {
 
 /***/ }),
 
-/***/ "./node_modules/socket.io-parser/index.js":
-/*!************************************************!*\
-  !*** ./node_modules/socket.io-parser/index.js ***!
-  \************************************************/
+/***/ "./node_modules/socket.io-client/node_modules/socket.io-parser/index.js":
+/*!******************************************************************************!*\
+  !*** ./node_modules/socket.io-client/node_modules/socket.io-parser/index.js ***!
+  \******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16087,11 +15834,11 @@ exports.removeBlobs = function(data, callback) {
  * Module dependencies.
  */
 
-var debug = __webpack_require__(/*! debug */ "./node_modules/socket.io-parser/node_modules/debug/src/browser.js")('socket.io-parser');
+var debug = __webpack_require__(/*! debug */ "./node_modules/socket.io-client/node_modules/socket.io-parser/node_modules/debug/src/browser.js")('socket.io-parser');
 var Emitter = __webpack_require__(/*! component-emitter */ "./node_modules/component-emitter/index.js");
-var binary = __webpack_require__(/*! ./binary */ "./node_modules/socket.io-parser/binary.js");
-var isArray = __webpack_require__(/*! isarray */ "./node_modules/socket.io-parser/node_modules/isarray/index.js");
-var isBuf = __webpack_require__(/*! ./is-buffer */ "./node_modules/socket.io-parser/is-buffer.js");
+var binary = __webpack_require__(/*! ./binary */ "./node_modules/socket.io-client/node_modules/socket.io-parser/binary.js");
+var isArray = __webpack_require__(/*! isarray */ "./node_modules/socket.io-client/node_modules/isarray/index.js");
+var isBuf = __webpack_require__(/*! ./is-buffer */ "./node_modules/socket.io-client/node_modules/socket.io-parser/is-buffer.js");
 
 /**
  * Protocol version.
@@ -16501,10 +16248,10 @@ function error(msg) {
 
 /***/ }),
 
-/***/ "./node_modules/socket.io-parser/is-buffer.js":
-/*!****************************************************!*\
-  !*** ./node_modules/socket.io-parser/is-buffer.js ***!
-  \****************************************************/
+/***/ "./node_modules/socket.io-client/node_modules/socket.io-parser/is-buffer.js":
+/*!**********************************************************************************!*\
+  !*** ./node_modules/socket.io-client/node_modules/socket.io-parser/is-buffer.js ***!
+  \**********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16529,14 +16276,14 @@ function isBuf(obj) {
           (withNativeArrayBuffer && (obj instanceof ArrayBuffer || isView(obj)));
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
 
 /***/ }),
 
-/***/ "./node_modules/socket.io-parser/node_modules/debug/src/browser.js":
-/*!*************************************************************************!*\
-  !*** ./node_modules/socket.io-parser/node_modules/debug/src/browser.js ***!
-  \*************************************************************************/
+/***/ "./node_modules/socket.io-client/node_modules/socket.io-parser/node_modules/debug/src/browser.js":
+/*!*******************************************************************************************************!*\
+  !*** ./node_modules/socket.io-client/node_modules/socket.io-parser/node_modules/debug/src/browser.js ***!
+  \*******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16546,7 +16293,7 @@ function isBuf(obj) {
  * Expose `debug()` as the module.
  */
 
-exports = module.exports = __webpack_require__(/*! ./debug */ "./node_modules/socket.io-parser/node_modules/debug/src/debug.js");
+exports = module.exports = __webpack_require__(/*! ./debug */ "./node_modules/socket.io-client/node_modules/socket.io-parser/node_modules/debug/src/debug.js");
 exports.log = log;
 exports.formatArgs = formatArgs;
 exports.save = save;
@@ -16736,14 +16483,14 @@ function localstorage() {
   } catch (e) {}
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../process/browser.js */ "./node_modules/process/browser.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../../process/browser.js */ "./node_modules/process/browser.js")))
 
 /***/ }),
 
-/***/ "./node_modules/socket.io-parser/node_modules/debug/src/debug.js":
-/*!***********************************************************************!*\
-  !*** ./node_modules/socket.io-parser/node_modules/debug/src/debug.js ***!
-  \***********************************************************************/
+/***/ "./node_modules/socket.io-client/node_modules/socket.io-parser/node_modules/debug/src/debug.js":
+/*!*****************************************************************************************************!*\
+  !*** ./node_modules/socket.io-client/node_modules/socket.io-parser/node_modules/debug/src/debug.js ***!
+  \*****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16760,7 +16507,7 @@ exports.coerce = coerce;
 exports.disable = disable;
 exports.enable = enable;
 exports.enabled = enabled;
-exports.humanize = __webpack_require__(/*! ms */ "./node_modules/ms/index.js");
+exports.humanize = __webpack_require__(/*! ms */ "./node_modules/socket.io-client/node_modules/socket.io-parser/node_modules/ms/index.js");
 
 /**
  * Active `debug` instances.
@@ -16976,18 +16723,165 @@ function coerce(val) {
 
 /***/ }),
 
-/***/ "./node_modules/socket.io-parser/node_modules/isarray/index.js":
-/*!*********************************************************************!*\
-  !*** ./node_modules/socket.io-parser/node_modules/isarray/index.js ***!
-  \*********************************************************************/
+/***/ "./node_modules/socket.io-client/node_modules/socket.io-parser/node_modules/ms/index.js":
+/*!**********************************************************************************************!*\
+  !*** ./node_modules/socket.io-client/node_modules/socket.io-parser/node_modules/ms/index.js ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-var toString = {}.toString;
+/**
+ * Helpers.
+ */
 
-module.exports = Array.isArray || function (arr) {
-  return toString.call(arr) == '[object Array]';
+var s = 1000;
+var m = s * 60;
+var h = m * 60;
+var d = h * 24;
+var y = d * 365.25;
+
+/**
+ * Parse or format the given `val`.
+ *
+ * Options:
+ *
+ *  - `long` verbose formatting [false]
+ *
+ * @param {String|Number} val
+ * @param {Object} [options]
+ * @throws {Error} throw an error if val is not a non-empty string or a number
+ * @return {String|Number}
+ * @api public
+ */
+
+module.exports = function(val, options) {
+  options = options || {};
+  var type = typeof val;
+  if (type === 'string' && val.length > 0) {
+    return parse(val);
+  } else if (type === 'number' && isNaN(val) === false) {
+    return options.long ? fmtLong(val) : fmtShort(val);
+  }
+  throw new Error(
+    'val is not a non-empty string or a valid number. val=' +
+      JSON.stringify(val)
+  );
 };
+
+/**
+ * Parse the given `str` and return milliseconds.
+ *
+ * @param {String} str
+ * @return {Number}
+ * @api private
+ */
+
+function parse(str) {
+  str = String(str);
+  if (str.length > 100) {
+    return;
+  }
+  var match = /^((?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|years?|yrs?|y)?$/i.exec(
+    str
+  );
+  if (!match) {
+    return;
+  }
+  var n = parseFloat(match[1]);
+  var type = (match[2] || 'ms').toLowerCase();
+  switch (type) {
+    case 'years':
+    case 'year':
+    case 'yrs':
+    case 'yr':
+    case 'y':
+      return n * y;
+    case 'days':
+    case 'day':
+    case 'd':
+      return n * d;
+    case 'hours':
+    case 'hour':
+    case 'hrs':
+    case 'hr':
+    case 'h':
+      return n * h;
+    case 'minutes':
+    case 'minute':
+    case 'mins':
+    case 'min':
+    case 'm':
+      return n * m;
+    case 'seconds':
+    case 'second':
+    case 'secs':
+    case 'sec':
+    case 's':
+      return n * s;
+    case 'milliseconds':
+    case 'millisecond':
+    case 'msecs':
+    case 'msec':
+    case 'ms':
+      return n;
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * Short format for `ms`.
+ *
+ * @param {Number} ms
+ * @return {String}
+ * @api private
+ */
+
+function fmtShort(ms) {
+  if (ms >= d) {
+    return Math.round(ms / d) + 'd';
+  }
+  if (ms >= h) {
+    return Math.round(ms / h) + 'h';
+  }
+  if (ms >= m) {
+    return Math.round(ms / m) + 'm';
+  }
+  if (ms >= s) {
+    return Math.round(ms / s) + 's';
+  }
+  return ms + 'ms';
+}
+
+/**
+ * Long format for `ms`.
+ *
+ * @param {Number} ms
+ * @return {String}
+ * @api private
+ */
+
+function fmtLong(ms) {
+  return plural(ms, d, 'day') ||
+    plural(ms, h, 'hour') ||
+    plural(ms, m, 'minute') ||
+    plural(ms, s, 'second') ||
+    ms + ' ms';
+}
+
+/**
+ * Pluralization helper.
+ */
+
+function plural(ms, n, name) {
+  if (ms < n) {
+    return;
+  }
+  if (ms < n * 1.5) {
+    return Math.floor(ms / n) + ' ' + name;
+  }
+  return Math.ceil(ms / n) + ' ' + name + 's';
+}
 
 
 /***/ }),
@@ -18142,7 +18036,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const adapter = Object(_adapter_factory_js__WEBPACK_IMPORTED_MODULE_0__["adapterFactory"])({window});
+const adapter =
+  Object(_adapter_factory_js__WEBPACK_IMPORTED_MODULE_0__["adapterFactory"])({window: typeof window === 'undefined' ? undefined : window});
 /* harmony default export */ __webpack_exports__["default"] = (adapter);
 
 
@@ -20991,8 +20886,6 @@ function deprecated(oldMethod, newMethod) {
  *     properties.
  */
 function detectBrowser(window) {
-  const {navigator} = window;
-
   // Returned result object.
   const result = {browser: null, version: null};
 
@@ -21001,6 +20894,8 @@ function detectBrowser(window) {
     result.browser = 'Not a browser.';
     return result;
   }
+
+  const {navigator} = window;
 
   if (navigator.mozGetUserMedia) { // Firefox.
     result.browser = 'firefox';
@@ -21354,6 +21249,113 @@ for (; i < length; i++) map[alphabet[i]] = i;
 yeast.encode = encode;
 yeast.decode = decode;
 module.exports = yeast;
+
+
+/***/ }),
+
+/***/ "./public/client.js":
+/*!**************************!*\
+  !*** ./public/client.js ***!
+  \**************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const io = __webpack_require__(/*! socket.io-client */ "./node_modules/socket.io-client/lib/index.js")
+const kurentoUtils = __webpack_require__(/*! kurento-utils */ "./node_modules/kurento-utils/lib/index.js")
+__webpack_require__(/*! webrtc-adapter */ "./node_modules/webrtc-adapter/src/js/adapter_core.js")
+
+//const wsUrl = `https://localhost:3000`
+const wsUrl = location.host
+const socket = io(wsUrl)
+let webRtcPeer
+let userId //TODO: in the future should use username or real user-id instead of socket.id
+
+socket.on('connect', () => {
+  console.log('connected')
+  userId = socket.id
+  document.querySelector('#username').innerText = `Your id is ${userId}`
+})
+
+document.querySelector('#stop-btn').onclick = function () {
+  socket.emit('stop-call', {
+    data: {
+      callerId: userId,
+      calleeId: document.querySelector('#to').value,
+    },
+  })
+}
+
+document.querySelector('#call-btn').onclick = function makeCall() {
+  const callType = document.querySelector('#call-type').value
+  const webRtcPeerOptions = {
+    localVideo: document.querySelector('#videoInput'),
+    remoteVideo: document.querySelector('#videoOutput'),
+
+    //browser collect ice candidate (network connection)
+    onicecandidate: (candidate) =>
+      socket.emit('client-send-ice-candidate', {
+        data: { candidate, userId },
+      }),
+  }
+
+  webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(
+    webRtcPeerOptions,
+    function (err) {
+      if (err) return console.error(err)
+      this.generateOffer((err, sdp) => {
+        if (err) return console.error(err)
+
+        socket.emit('client-make-call', {
+          data: {
+            callerOfferSdp: sdp,
+            callType,
+            to: document.querySelector('#to').value,
+            from: userId,
+          },
+        })
+      })
+    }
+  )
+}
+
+socket.on('client-have-incoming-call', async ({ data }) => {
+  const webRtcPeerOptions = {
+    localVideo: document.querySelector('#videoInput'),
+    remoteVideo: document.querySelector('#videoOutput'),
+
+    //browser collect ice candidate (network connection)
+    onicecandidate: (candidate) =>
+      socket.emit('client-send-ice-candidate', {
+        data: { candidate },
+      }),
+  }
+
+  webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(
+    webRtcPeerOptions,
+    function (err) {
+      if (err) return console.error(err)
+      this.generateOffer((err, sdp) => {
+        if (err) return console.error(err)
+
+        socket.emit('client-accept-call', {
+          data: {
+            sdp,
+            callerId: data.callerId,
+            calleeId: data.calleeId,
+          },
+        })
+      })
+    }
+  )
+})
+
+socket.on('server-send-kurento-candidate', ({ data }) => {
+  webRtcPeer.addIceCandidate(data.candidate)
+})
+
+socket.on('start-communication', ({ data }) => {
+  webRtcPeer.processAnswer(data.sdp)
+})
 
 
 /***/ }),
