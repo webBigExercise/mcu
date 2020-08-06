@@ -64,7 +64,7 @@ socket.on('client-have-incoming-call', async ({ data }) => {
     //browser collect ice candidate (network connection)
     onicecandidate: (candidate) =>
       socket.emit('client-send-ice-candidate', {
-        data: { candidate },
+        data: { candidate, userId },
       }),
   }
 

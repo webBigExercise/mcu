@@ -1,3 +1,5 @@
 module.exports = function enableEvent(socket) {
-  socket
+  socket.on('stop-call', async ({data}) => {
+    
+  })
 }

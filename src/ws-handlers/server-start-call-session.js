@@ -32,6 +32,7 @@ module.exports = function enableEvent(socket) {
     const session = {
       id: sessionId,
       pipelineId: pipeline.id,
+      userIds: [data.callerUserId, data.acceptUserId],
     }
     await callSessionRepo.create(session)
 
@@ -68,8 +69,8 @@ module.exports = function enableEvent(socket) {
   })
 }
 
-async function addQueuedCandidateToEndpoint(endpoint, endpointKeyInQueue) {
-  const candidates = await candidateQueueRepo.listAll(endpointKeyInQueue)
+async function addQueuedCandidateToEndpoint(endpoint, userSessionId) {
+  const candidates = await candidateQueueRepo.listAll(userSessionId)
 
   for (const rawCandidate of candidates) {
     const deserialized = JSON.parse(rawCandidate)
@@ -77,7 +78,7 @@ async function addQueuedCandidateToEndpoint(endpoint, endpointKeyInQueue) {
     endpoint.addIceCandidate(candidate)
   }
 
-  await candidateQueueRepo.remove(endpointKeyInQueue)
+  await candidateQueueRepo.remove(userSessionId)
 }
 
 function sendIceCandidateToClient(endpoint, userId) {

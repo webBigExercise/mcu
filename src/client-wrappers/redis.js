@@ -16,5 +16,8 @@ module.exports.getClient = function getClient() {
   _client.rpushPromise = promisify(_client.rpush).bind(_client)
   _client.lrangePromise = promisify(_client.lrange).bind(_client)
   _client.delPromise = promisify(_client.del).bind(_client)
+  _client.hmsetPromise = promisify(_client.hmset).bind(_client) //hash set many
+  _client.hsetPromise = promisify(_client.hset).bind(_client) //hash set
+  _client.hgetallPromise = promisify(_client.hgetall).bind(_client) //hash get
   return _client
 }
