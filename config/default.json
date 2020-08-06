@@ -16,5 +16,11 @@
     "host": "127.0.0.1",
     "port": 6379,
     "option": {}
+  },
+  "rtp": {
+    "videoPortStart": 55000,
+    "audioPortStart": 49170,
+    "sdpPath": "/mnt/c/Users/admin/Desktop/sdps",
+    "ip": "127.0.0.1"
   }
 }

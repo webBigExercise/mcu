@@ -1,5 +1,5 @@
 const { socketIoWrapper } = require('../client-wrappers')
-const { userSessionRepo } = require('../repos')
+const { userSessionRepo, rtpPortRepo } = require('../repos')
 const { PRIVATE_USER_ROOM_PREFIX } = require('../constants')
 const enableEventClientMakeCall = require('./client-make-call')
 const enableEventClientAcceptCall = require('./client-accept-call')
@@ -9,6 +9,7 @@ const enableEventJoinRoom = require('./join-room')
 const enableEventServerStartCallSession = require('./server-start-call-session')
 
 const io = socketIoWrapper.getClient()
+rtpPortRepo.init()
 
 io.on('connection', (socket) => {
   //TODO: change later by real user identification like username or real user's id
