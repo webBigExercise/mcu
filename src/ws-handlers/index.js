@@ -14,7 +14,7 @@ io.on('connection', (socket) => {
   //TODO: change later by real user identification like username or real user's id
   const userId = socket.id
   const privateUserRoom = `${PRIVATE_USER_ROOM_PREFIX}${userId}`
-  const userSession = { id: userId, webRtcEndpointId: null }
+  const userSession = { id: userId, webRtcEndpointId: null, hubportEndpointId: null }
 
   socket.join(privateUserRoom)
   userSessionRepo.create(userSession)

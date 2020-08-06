@@ -5,6 +5,7 @@ const {
   kurentoMediaRepo,
   candidateQueueRepo,
   callSessionRepo,
+  userSessionRepo,
 } = require('../repos')
 
 module.exports = function enableEvent(socket) {
@@ -17,25 +18,14 @@ module.exports = function enableEvent(socket) {
     const callerWebRtcEndpoint = await pipeline.create('WebRtcEndpoint')
     const acceptUserWebRtcEndpoint = await pipeline.create('WebRtcEndpoint')
     const rtpEndpoint = await pipeline.create('RtpEndpoint')
-    // const recorderEndpoint = await pipeline.create('RecorderEndpoint', {
-    //   uri: `file://${config.get('recorder.path')}/${sessionId}.webm`,
-    // })
 
     //hub
     //mixing video
     const composite = await pipeline.create('Composite')
     const callerHubport = await composite.createHubPort()
     const acceptUserHubport = await composite.createHubPort()
-    // const recorderHubport = await composite.createHubPort()
     const rtpHubport = await composite.createHubPort()
-
-    const session = {
-      id: sessionId,
-      pipelineId: pipeline.id,
-      userIds: [data.callerUserId, data.acceptUserId],
-    }
-    await callSessionRepo.create(session)
-
+    
     await addQueuedCandidateToEndpoint(callerWebRtcEndpoint, data.callerUserId)
     await addQueuedCandidateToEndpoint(
       acceptUserWebRtcEndpoint,
@@ -66,6 +56,21 @@ module.exports = function enableEvent(socket) {
 
     sendSdpAnswerToClient(data.callerUserId, callerAnswerSdp)
     sendSdpAnswerToClient(data.acceptUserId, acceptUserAnswerSdp)
+
+    //create session
+    await callSessionRepo.create({
+      id: sessionId,
+      pipelineId: pipeline.id,
+      userIds: [data.callerUserId, data.acceptUserId],
+    })
+    await userSessionRepo.set(data.callerUserId, {
+      webRtcEndpointId: callerWebRtcEndpoint.id,
+      hubportEndpointId: callerHubport.id,
+    })
+    await userSessionRepo.set(data.acceptUserId, {
+      webRtcEndpointId: acceptUserWebRtcEndpoint.id,
+      hubportEndpointId: acceptUserHubport.id,
+    })
   })
 }
 

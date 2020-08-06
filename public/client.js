@@ -15,11 +15,12 @@ socket.on('connect', () => {
 })
 
 document.querySelector('#stop-btn').onclick = function () {
-  socket.emit('stop-call', {
+  if (webRtcPeer) webRtcPeer.dispose()
+  socket.emit('client-leave', {
     data: {
       to: document.querySelector('#to').value,
       callType: document.querySelector('#call-type').value,
-      userId
+      userId,
     },
   })
 }
@@ -100,4 +101,8 @@ socket.on('server-send-kurento-candidate', ({ data }) => {
 
 socket.on('start-communication', ({ data }) => {
   webRtcPeer.processAnswer(data.sdp)
+})
+
+socket.on('stop-call', () => {
+  if (webRtcPeer) webRtcPeer.dispose()
 })
