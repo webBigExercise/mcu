@@ -21279,8 +21279,9 @@ socket.on('connect', () => {
 document.querySelector('#stop-btn').onclick = function () {
   socket.emit('stop-call', {
     data: {
-      callerId: userId,
-      calleeId: document.querySelector('#to').value,
+      to: document.querySelector('#to').value,
+      callType: document.querySelector('#call-type').value,
+      userId
     },
   })
 }
